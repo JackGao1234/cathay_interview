@@ -1,5 +1,5 @@
+import os
 import pandas as pd
-
 
 if __name__ == "__main__":
     # ans_2: the five cities' real estate data
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     filtered_df = filtered_df.loc[filtered_df["建物型態"].str.startswith('住宅大樓')]
     print(f"建物型態==住宅大樓: {filtered_df.shape}")
 
+
     def gte_13_floors(row):
         #  possible values of row['總樓層數']
         #  五層' '七層' '十四層' '十三層' '九層' '十層' '四層' '十二層' '十九層' '十八層' '八層' '六層' '十五層'
@@ -46,7 +47,40 @@ if __name__ == "__main__":
 
 
     filtered_df['總樓層數'] = filtered_df['總樓層數'].astype(str)
-    result = filtered_df[filtered_df.apply(gte_13_floors, axis=1)]
-    print(f"總樓層數>=十三層: {result.shape}")
+    filter_a = filtered_df[filtered_df.apply(gte_13_floors, axis=1)]
+    print(f"總樓層數>=十三層: {filter_a.shape}")
+    print(filter_a.head())
 
-    print(result.head())
+    if not os.path.exists("result"):
+        os.makedirs("result")
+
+    filter_a.to_csv(f"result/filter_a.csv", index=False)
+
+
+    print("==== filter_b.csv ====")
+    # 計算總件數
+    count = filter_a.shape[0]
+    print(f"計算總件數={count}")
+
+    # 總車位數
+    parking_space_series = filter_a["交易筆棟數"].str.split('車位').str[-1].astype(int)
+    # print(parking_space_series.head())
+    parking_spaces = parking_space_series.sum()
+    print(f"總車位數={parking_spaces}")
+
+    # 平均總價元
+    avg_price = filter_a['總價元'].mean()
+    print(f"平均總價元={avg_price}")
+
+    # 平均車位總價元
+    avg_parking_space_price = filter_a['車位總價元'].sum() / parking_spaces
+    print(f"平均車位總價元={avg_parking_space_price}")
+
+    filter_b = pd.DataFrame({'計算總件數': pd.Series([], dtype='int'),
+                             '總車位數': pd.Series([], dtype='int'),
+                             '平均總價元': pd.Series([], dtype='float'),
+                             '平均車位總價元': pd.Series([], dtype='float')})
+    filter_b.loc[-1] = [count, parking_spaces, avg_price, avg_parking_space_price]
+    print(filter_b.head(5))
+    print(filter_b.dtypes)
+    filter_b.to_csv(f"result/filter_b.csv", index=False)
