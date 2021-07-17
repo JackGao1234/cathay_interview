@@ -1,1 +1,1 @@
-1. All raw data is at [raw_data](raw_data/)
+1. All raw data is at [raw_data/](raw_data/)
